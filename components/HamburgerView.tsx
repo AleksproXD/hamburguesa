@@ -1,11 +1,17 @@
+import { Gltf, OrbitControls, useGLTF } from '@react-three/drei/native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
-import { Suspense, useRef, useEffect } from 'react';
-import { View, Text } from 'react-native';
-import { useGLTF } from '@react-three/drei/native';
-import * as THREE from 'three';
+import { Suspense, useRef } from 'react';
+import { Text, View } from 'react-native';
 import '../global.css';
 
-// Componente para cada ingrediente con smooth shading
+// Importar los modelos GLB
+import carne from '../assets/3D/Carne.glb';
+import lechuga from '../assets/3D/lechuga.glb';
+import panSuperior from '../assets/3D/pan.glb';
+import panBase from '../assets/3D/Pan2.glb';
+import tomate from '../assets/3D/tomate.glb';
+
+// Componente para cada ingrediente
 function Ingredient({ 
   modelPath, 
   yPosition, 
@@ -22,22 +28,6 @@ function Ingredient({
   const meshRef = useRef<any>(null);
   const gltf: any = useGLTF(modelPath);
 
-  // Aplicar smooth shading simple
-  useEffect(() => {
-    if (gltf?.scene) {
-      gltf.scene.traverse((child: any) => {
-        if (child.isMesh) {
-          // Solo activar smooth shading básico
-          child.geometry.computeVertexNormals();
-          if (child.material) {
-            child.material.flatShading = false;
-            child.material.needsUpdate = true;
-          }
-        }
-      });
-    }
-  }, [gltf]);
-
   // Rotación automática como microondas
   useFrame((state, delta) => {
     if (meshRef.current) {
@@ -45,16 +35,21 @@ function Ingredient({
     }
   });
 
-  // Verificar que gltf.scene existe
   if (!gltf?.scene) return null;
 
   return (
-    <primitive 
-      ref={meshRef} 
-      object={gltf.scene} 
-      position={[xPosition, yPosition, zPosition]}
-      scale={scale}
-    />
+    // <primitive 
+    //   ref={meshRef} 
+    //   object={gltf.scene} 
+    //   position={[xPosition, yPosition, zPosition]}
+    //   scale={scale}
+    // />
+    <group>
+      <Gltf src={panSuperior}/>
+      <Gltf src={lechuga}/>
+      <Gltf src={tomate}/>
+      <Gltf src={carne}/>
+    </group>
   );
 }
 
@@ -74,37 +69,37 @@ export default function HamburgerView() {
           <directionalLight position={[10, 10, 10]} intensity={1} />
           <directionalLight position={[-10, 10, -10]} intensity={0.5} />
           <pointLight position={[0, 8, 5]} intensity={0.8} />
-          
-          {/* TODOS los ingredientes con EL MISMO tamaño pequeño-mediano */}
+          <OrbitControls/>
+          {/* TODOS los ingredientes importados con .glb */}
           <Suspense fallback={null}>
             {/* Pan Superior (Pan.glb) - ARRIBA */}
             <Ingredient 
-              modelPath={require('../assets/3D/Pan.glb')} 
+              modelPath={panSuperior} 
               yPosition={1} 
               scale={0.5}
             />
-            {/* Lechuga - un poco más grande y ajustable en X */}
+            {/* Lechuga - un poco más grande */}
             <Ingredient 
-              modelPath={require('../assets/3D/Lechuga.glb')} 
+              modelPath={lechuga} 
               yPosition={0.6} 
               xPosition={0.1} 
               scale={0.9}
             />
             {/* Tomate */}
             <Ingredient 
-              modelPath={require('../assets/3D/tomatico.glb')} 
+              modelPath={tomate} 
               yPosition={0.5} 
               scale={0.5}
             />
             {/* Carne */}
             <Ingredient 
-              modelPath={require('../assets/3D/Carnita.glb')} 
+              modelPath={carne} 
               yPosition={0.2} 
               scale={0.5}
             />
             {/* Pan Inferior (Pan2.glb) - BASE ABAJO */}
             <Ingredient 
-              modelPath={require('../assets/3D/Pan2.glb')} 
+              modelPath={panBase} 
               yPosition={-0.1} 
               scale={0.5}
             />
