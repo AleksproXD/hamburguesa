@@ -25,7 +25,6 @@ function IngredienteGiratorio({
 }) {
   const groupRef = useRef<any>(null);
 
-  // Rotación automática
   useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.5;
@@ -53,30 +52,27 @@ const PRECIOS = {
   lechuga: 0.5,
   tomate: 0.75,
   carne: 2.5,
-  base: 1.5 // Precio base de los panes
+  base: 1.5
 };
 
 export default function HamburgerView() {
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
   const [contadorId, setContadorId] = useState(0);
 
-  // Agregar ingrediente
   const agregarIngrediente = (tipo: 'lechuga' | 'tomate' | 'carne') => {
     setIngredientes([...ingredientes, { tipo, id: contadorId }]);
     setContadorId(contadorId + 1);
   };
 
-  // Eliminar todo (deja solo los panes)
   const eliminarTodo = () => {
     setIngredientes([]);
     setContadorId(0);
   };
 
-  // Calcular posiciones dinámicamente - cada ingrediente se apila sobre el anterior
   const calcularPosiciones = (): IngredienteConPosicion[] => {
     const posiciones: IngredienteConPosicion[] = [];
-    let yActual = 0.25; // Posición inicial sobre el pan base
-    const separacion = 0.12; // Espacio entre ingredientes
+    let yActual = 0.25;
+    const separacion = 0.12;
 
     ingredientes.forEach((ing) => {
       posiciones.push({ ...ing, yPosition: yActual });
@@ -88,20 +84,17 @@ export default function HamburgerView() {
 
   const posicionesIngredientes = calcularPosiciones();
   
-  // Pan superior se posiciona encima del último ingrediente o en posición base si no hay ingredientes
   const yPanSuperior = ingredientes.length > 0 
     ? 0.25 + (ingredientes.length * 0.12) + 0.05
     : 0.35;
   
-  // Calcular el centro Y de toda la hamburguesa para desplazar TODO el modelo
   const alturaPanBase = -0.05;
   const alturaPanSuperior = yPanSuperior;
   const centroY = (alturaPanBase + alturaPanSuperior) / 2;
-  const desplazamiento = -centroY; // Desplazamos todo para centrar en Y=0
+  const desplazamiento = -centroY;
 
-  // Calcular precio total
   const calcularPrecioTotal = (): number => {
-    let total = PRECIOS.base; // Precio base (panes)
+    let total = PRECIOS.base;
     ingredientes.forEach((ing) => {
       total += PRECIOS[ing.tipo];
     });
@@ -111,32 +104,29 @@ export default function HamburgerView() {
   const precioTotal = calcularPrecioTotal();
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1 bg-gradient-to-b from-gray-900 to-black">
       <Text className="text-white text-4xl font-bold text-center pt-16 pb-4 tracking-wider">
         Crea tu Hamburguesa
       </Text>
       
-      {/* Canvas 3D - Aquí se renderiza la hamburguesa */}
-      <View className="flex-1 mx-4 my-2">
+      {/* Canvas 3D */}
+      <View className="flex-1 mx-4 my-2 bg-gray-800/30 rounded-3xl overflow-hidden">
         <Canvas 
           camera={{ position: [0, 0, 4], fov: 45 }}
           gl={{ antialias: true }}
         >
-          {/* Iluminación */}
           <ambientLight intensity={0.8} />
           <directionalLight position={[5, 5, 5]} intensity={1.2} />
           <directionalLight position={[-5, 3, -5]} intensity={0.6} />
           <pointLight position={[0, 5, 3]} intensity={0.8} color="#ffffff" />
           
           <Suspense fallback={null}>
-            {/* Pan Base - SIEMPRE visible */}
             <IngredienteGiratorio 
               modelPath={panBase} 
               yPosition={-0.05 + desplazamiento} 
               scale={0.5}
             />
             
-            {/* Ingredientes agregados - se apilan dinámicamente */}
             {posicionesIngredientes.map((ing) => (
               <IngredienteGiratorio
                 key={ing.id}
@@ -150,7 +140,6 @@ export default function HamburgerView() {
               />
             ))}
             
-            {/* Pan Superior - SIEMPRE visible, se mueve según ingredientes */}
             <IngredienteGiratorio 
               modelPath={panSuperior} 
               yPosition={yPanSuperior + desplazamiento} 
@@ -162,9 +151,9 @@ export default function HamburgerView() {
 
       {/* Panel de control */}
       <View className="pb-10 px-4">
-        {/* Contador de precio e ingredientes */}
-        <View className="bg-gray-800 rounded-2xl p-4 mb-4 mx-2">
-          <View className="flex-row justify-between items-center mb-2">
+        {/* Info panel */}
+        <View className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl p-5 mb-4 mx-2 shadow-lg">
+          <View className="flex-row justify-between items-center mb-3">
             <Text className="text-gray-300 text-base font-semibold">
               Ingredientes:
             </Text>
@@ -172,7 +161,7 @@ export default function HamburgerView() {
               {ingredientes.length}
             </Text>
           </View>
-          <View className="flex-row justify-between items-center">
+          <View className="border-t border-gray-600 pt-3 flex-row justify-between items-center">
             <Text className="text-gray-300 text-base font-semibold">
               Precio Total:
             </Text>
@@ -182,7 +171,7 @@ export default function HamburgerView() {
           </View>
         </View>
         
-        {/* Botones para agregar ingredientes */}
+        {/* Botones de ingredientes */}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
@@ -191,8 +180,8 @@ export default function HamburgerView() {
           <View className="flex-row gap-3 px-2">
             <TouchableOpacity
               onPress={() => agregarIngrediente('lechuga')}
-              className="bg-green-600 px-8 py-4 rounded-2xl"
-              activeOpacity={0.7}
+              className="bg-green-600 px-8 py-4 rounded-2xl shadow-lg"
+              activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-base text-center">
                 Lechuga
@@ -204,8 +193,8 @@ export default function HamburgerView() {
 
             <TouchableOpacity
               onPress={() => agregarIngrediente('tomate')}
-              className="bg-red-600 px-8 py-4 rounded-2xl"
-              activeOpacity={0.7}
+              className="bg-red-600 px-8 py-4 rounded-2xl shadow-lg"
+              activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-base text-center">
                 Tomate
@@ -217,8 +206,8 @@ export default function HamburgerView() {
 
             <TouchableOpacity
               onPress={() => agregarIngrediente('carne')}
-              className="bg-amber-700 px-8 py-4 rounded-2xl"
-              activeOpacity={0.7}
+              className="bg-amber-700 px-8 py-4 rounded-2xl shadow-lg"
+              activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-base text-center">
                 Carne
@@ -230,13 +219,13 @@ export default function HamburgerView() {
           </View>
         </ScrollView>
 
-        {/* Botón Eliminar Todo */}
+        {/* Botón Eliminar */}
         <TouchableOpacity
           onPress={eliminarTodo}
-          className="bg-red-500 px-8 py-4 rounded-2xl mx-4"
+          className="bg-red-500 px-8 py-4 rounded-2xl mx-4 shadow-lg"
           disabled={ingredientes.length === 0}
           style={{ opacity: ingredientes.length === 0 ? 0.4 : 1 }}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
           <Text className="text-white font-bold text-base text-center">
             Eliminar Todo
